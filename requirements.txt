@@ -16,6 +16,10 @@ fastapi>=0.115.0,<0.116.0
 # [standard] includes uvloop (faster event loop) and httptools
 uvicorn[standard]>=0.34.0,<0.35.0
 
+# python-multipart: Required by FastAPI to parse Form() data
+# Twilio sends webhooks as application/x-www-form-urlencoded — this parses them
+python-multipart>=0.0.20,<0.1.0
+
 # ── Configuration ─────────────────────────────────────────────────
 # python-dotenv: Loads .env files into environment variables
 python-dotenv>=1.1.0,<1.2.0

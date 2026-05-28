@@ -22,10 +22,10 @@ class Settings(BaseSettings):
     Application settings loaded from environment variables.
     
     Required variables (must be in .env):
-        - GEMINI_API_KEY: Google Gemini API key for AI responses
         - TWILIO_ACCOUNT_SID: Twilio account identifier
         - TWILIO_AUTH_TOKEN: Twilio authentication token
-        - TWILIO_WHATSAPP_NUMBER: Twilio sandbox WhatsApp number
+        - TWILIO_WHATSAPP_FROM: Twilio sandbox WhatsApp number (e.g. whatsapp:+14155238886)
+        - GEMINI_API_KEY: Google Gemini API key for AI responses (Phase 3+)
     
     Optional variables (have sensible defaults):
         - APP_NAME: Display name of the application
@@ -44,15 +44,16 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # ── Google Gemini AI ──────────────────────────────────────────
-    # Required in Phase 2 — defaulting to empty string for Phase 1
-    GEMINI_API_KEY: str = ""
-    
     # ── Twilio WhatsApp ───────────────────────────────────────────
-    # Required in Phase 2 — defaulting to empty strings for Phase 1
+    # Required — get from https://console.twilio.com
     TWILIO_ACCOUNT_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_NUMBER: str = ""
+    # The Twilio sandbox number in format: whatsapp:+14155238886
+    TWILIO_WHATSAPP_FROM: str = ""
+    
+    # ── Google Gemini AI ──────────────────────────────────────────
+    # Required in Phase 3+ — defaulting to empty string for now
+    GEMINI_API_KEY: str = ""
     
     # ── Pydantic Settings Config ──────────────────────────────────
     # This tells Pydantic WHERE to find the .env file and how to read it
