@@ -1,0 +1,52 @@
+# ==============================================================================
+# WhatsApp AI Bot — .gitignore
+# ==============================================================================
+# This file tells Git which files/folders to NEVER track.
+# Keeps secrets safe and the repo clean.
+# ==============================================================================
+
+# ── Environment & Secrets ─────────────────────────────────────────
+# CRITICAL: Never commit API keys or secrets
+.env
+.env.local
+.env.production
+
+# ── Python ────────────────────────────────────────────────────────
+# Virtual environment (large, OS-specific, recreatable)
+venv/
+.venv/
+env/
+
+# Bytecode cache (auto-generated, not needed in repo)
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ── IDE & Editor ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ── Testing & Coverage ───────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Logs ──────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS Files ──────────────────────────────────────────────────────
+Thumbs.db
+.DS_Store

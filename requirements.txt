@@ -1,0 +1,35 @@
+# ==============================================================================
+# WhatsApp AI Bot — Python Dependencies
+# ==============================================================================
+# Install with: pip install -r requirements.txt
+#
+# Version pinning strategy:
+#   - Pin minor versions (>=X.Y.0,<X.Z.0) for stability
+#   - This allows patch updates (bugfixes) but prevents breaking changes
+# ==============================================================================
+
+# ── Web Framework ─────────────────────────────────────────────────
+# FastAPI: Modern async web framework for building APIs
+fastapi>=0.115.0,<0.116.0
+
+# Uvicorn: ASGI server that actually runs FastAPI
+# [standard] includes uvloop (faster event loop) and httptools
+uvicorn[standard]>=0.34.0,<0.35.0
+
+# ── Configuration ─────────────────────────────────────────────────
+# python-dotenv: Loads .env files into environment variables
+python-dotenv>=1.1.0,<1.2.0
+
+# pydantic-settings: Type-safe settings with validation
+pydantic-settings>=2.9.0,<2.10.0
+
+# ── AI & Messaging (Phase 2 — installed now for clean setup) ─────
+# Google Generative AI SDK: Official Gemini API client
+google-genai>=1.16.0,<1.17.0
+
+# Twilio SDK: Send/receive WhatsApp messages via Twilio
+twilio>=9.6.0,<9.7.0
+
+# ── HTTP Client ───────────────────────────────────────────────────
+# httpx: Modern async HTTP client (used by SDKs and for testing)
+httpx>=0.28.0,<0.29.0
