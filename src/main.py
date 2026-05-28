@@ -44,6 +44,7 @@ async def lifespan(app: FastAPI):
     print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
     print(f"📍 Server running at http://{settings.HOST}:{settings.PORT}")
     print(f"📚 API Docs at http://{settings.HOST}:{settings.PORT}/docs")
+    print(f"🤖 Gemini AI: {'CONNECTED' if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != 'your-gemini-api-key-here' else 'NOT CONFIGURED'}")
     print(f"🐛 Debug mode: {'ON' if settings.DEBUG else 'OFF'}")
     print("=" * 60)
     

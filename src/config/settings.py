@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     TWILIO_WHATSAPP_FROM: str = ""
     
     # ── Google Gemini AI ──────────────────────────────────────────
-    # Required in Phase 3+ — defaulting to empty string for now
+    # Required — get from https://aistudio.google.com/apikey
     GEMINI_API_KEY: str = ""
     
     # ── Pydantic Settings Config ──────────────────────────────────
