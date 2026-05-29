@@ -31,40 +31,7 @@ from google.genai import types
 from src.config.settings import settings
 
 
-# ══════════════════════════════════════════════════════════════════
-#  SYSTEM PROMPT — The Bot's Personality
-# ══════════════════════════════════════════════════════════════════
-# This tells Gemini HOW to behave. It's sent with every request
-# as invisible context the user never sees.
-#
-# WHY a system prompt?
-# - Without it, Gemini gives generic, robotic responses
-# - The system prompt shapes the bot's personality, tone, and rules
-# - It's like giving the bot a "job description"
-
-SYSTEM_PROMPT = """You are a friendly, helpful WhatsApp AI assistant.
-
-PERSONALITY:
-- Be warm, conversational, and approachable
-- Use a casual but respectful tone (like texting a helpful friend)
-- Keep responses short and concise — this is WhatsApp, not an essay
-- Use relevant emojis sparingly to add personality (1-2 per message max)
-- Be direct and get to the point quickly
-
-RULES:
-- Keep replies under 200 words unless the user asks for detail
-- If you don't know something, say so honestly
-- Never make up facts, links, or references
-- Be helpful with a wide range of topics: general knowledge, coding, advice, etc.
-- For sensitive or medical/legal topics, recommend consulting a professional
-- Respond in the same language the user writes in
-
-FORMAT:
-- Use short paragraphs (1-3 sentences each)
-- Use bullet points or numbered lists for multi-step answers
-- Avoid markdown formatting (WhatsApp doesn't render it well)
-- No headers, bold, or italic markers — just plain text
-"""
+from src.config.personality import get_system_prompt
 
 
 class GeminiService:
@@ -80,10 +47,9 @@ class GeminiService:
         reply = await gemini.generate_response("What's the weather like?")
     """
     
-    # Fallback message when Gemini can't generate a response
+    # Emergency fallback message when the API fails
     FALLBACK_RESPONSE = (
-        "I'm having trouble thinking right now 🤔 "
-        "Please try again in a moment!"
+        "I'm having trouble right now 🤔 Please try again later."
     )
     
     def __init__(self):
@@ -104,14 +70,13 @@ class GeminiService:
             self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
             print("✅ Gemini AI client initialized successfully")
         
-        # Model to use — Gemini 2.5 Flash is fast, smart, and cost-effective
-        # Perfect for chat applications where speed and quality both matter
-        self.model_name = "gemini-2.5-flash"
+        # Model to use — specified in settings
+        self.model_name = getattr(settings, 'GEMINI_MODEL', "gemini-1.5-flash")
         
         # Store the system prompt for use in every request
-        self.system_prompt = SYSTEM_PROMPT
+        self.system_prompt = get_system_prompt()
     
-    async def generate_response(self, user_message: str) -> str:
+    async def generate_response(self, user_message: str, chat_history: list = None, profile_context: str = None) -> str:
         """
         Generate an AI response for the given user message.
         
@@ -125,6 +90,8 @@ class GeminiService:
         
         Args:
             user_message: The text message from the WhatsApp user
+            chat_history: Optional list of previous messages in format [{"role": "user"/"model", "content": "..."}]
+            profile_context: Optional string containing formatted user profile data
             
         Returns:
             str: AI-generated reply text, or fallback message on error
@@ -142,17 +109,50 @@ class GeminiService:
             return self.FALLBACK_RESPONSE
         
         try:
+            # ── Format Conversation History ───────────────────────
+            # Construct the `contents` list for the Gemini API
+            # Priority: 1. System Prompt (handled in config)
+            #           2. User Profile (highest dynamic memory priority)
+            #           3. Recent Chat History
+            #           4. Latest Message
+            
+            # Start by combining System Prompt and Profile into the system instruction
+            final_system_instruction = self.system_prompt
+            if profile_context:
+                final_system_instruction += f"\n\n{profile_context}"
+                
+            contents = []
+            
+            if chat_history:
+                for msg in chat_history:
+                    # Map our role names to Gemini's role names if necessary.
+                    # Our DB uses 'user' and 'model', which match Gemini's expectations.
+                    contents.append(
+                        types.Content(
+                            role=msg["role"],
+                            parts=[types.Part.from_text(text=msg["content"])]
+                        )
+                    )
+            
+            # Append the current message
+            contents.append(
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=user_message)]
+                )
+            )
+            
             # ── Call the Gemini API ───────────────────────────────
-            print(f"🤖 Sending to Gemini: \"{user_message[:80]}{'...' if len(user_message) > 80 else ''}\"")
+            print(f"🤖 Sending to Gemini (Model: {self.model_name}) | History: {len(chat_history) if chat_history else 0} msgs")
             
             # Run the synchronous SDK call in a thread pool
             # This prevents blocking FastAPI's async event loop
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.model_name,
-                contents=user_message,
+                contents=contents,
                 config=types.GenerateContentConfig(
-                    system_instruction=self.system_prompt,
+                    system_instruction=final_system_instruction,
                     temperature=0.7,
                     max_output_tokens=300,
                 ),
@@ -174,7 +174,6 @@ class GeminiService:
             
         except Exception as e:
             # ── Handle any Gemini API errors ──────────────────────
-            # Common errors: rate limits, invalid API key, network issues
             print(f"❌ Gemini API error: {type(e).__name__}: {e}")
             traceback.print_exc()
             return self.FALLBACK_RESPONSE

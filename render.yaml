@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: wpbot-backend
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: MONGODB_URL
+        sync: false
+      - key: DB_NAME
+        value: whatsapp_ai_bot
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false

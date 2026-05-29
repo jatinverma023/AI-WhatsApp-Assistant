@@ -1,79 +1,123 @@
-# 🤖 WhatsApp AI Bot
+# WPBot AI
 
-An AI-powered WhatsApp chatbot built with **Python**, **FastAPI**, **Google Gemini 2.5 Flash**, and **Twilio**.
+![Status](https://img.shields.io/badge/Status-Production_Ready-success) ![Stack](https://img.shields.io/badge/Stack-React_|_FastAPI_|_MongoDB-blue) ![AI](https://img.shields.io/badge/AI-Google_Gemini-orange)
+
+AI-powered WhatsApp Assistant built with FastAPI, Gemini AI, MongoDB Atlas, Twilio WhatsApp API, and React. This project demonstrates a complete, production-ready full-stack architecture that extracts insights, maintains persistent memory, and operates smoothly across multiple services.
 
 ## Features
 
-- 💬 Receive and reply to WhatsApp messages automatically
-- 🧠 AI-powered responses using Google Gemini 2.5 Flash
-- 🧵 Conversation memory — maintains context per user
-- 👥 Multi-user support
-- 🏗️ Clean, scalable architecture ready for SaaS
+* **WhatsApp AI Chatbot**: Real-time contextual conversations through Twilio integration.
+* **Persistent Memory**: Semantic memory extraction engine saves relevant user facts automatically.
+* **User Profiles**: Detailed tracking of user interactions, interests, and coding goals.
+* **Admin Dashboard**: Sleek, recruiter-friendly interface for managing the CRM.
+* **MongoDB Atlas Integration**: Highly-available database storage with indexing.
+* **Gemini AI Responses**: Intelligent LLM routing utilizing Gemini 2.5 Flash-Lite.
+* **Conversation History**: Beautiful WhatsApp-style UI for reviewing past chats.
+* **System Monitoring**: Live health checks across APIs and Databases.
+
+## Architecture
+
+```mermaid
+graph TD
+    WhatsApp[WhatsApp User] -->|Message| Twilio
+    Twilio -->|POST Webhook| FastAPI[FastAPI Backend]
+    FastAPI -->|Extract & Store Context| MongoDB[(MongoDB Atlas)]
+    FastAPI -->|Generate Reply| Gemini[Google Gemini AI]
+    Gemini -->|Response| FastAPI
+    FastAPI -->|Send Message| Twilio
+    Twilio -->|Deliver| WhatsApp
+    Admin[Admin Dashboard / React] <-->|REST API| FastAPI
+```
 
 ## Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| Python 3.11+ | Core language |
-| FastAPI | Web framework (async) |
-| Google Gemini | AI response generation |
-| Twilio | WhatsApp messaging API |
-| ngrok | Local tunnel for webhooks |
+**Frontend:**
+* React + TypeScript + Vite
+* Tailwind CSS + Framer Motion
+* Recharts (Data Visualization)
 
-## Quick Start
+**Backend:**
+* FastAPI (Python)
+* Pydantic (Data Validation)
+* Motor (Async MongoDB Driver)
+* PyJWT (Authentication)
 
+**Database:**
+* MongoDB Atlas
+
+**AI & Messaging:**
+* Google Gemini AI API
+* Twilio WhatsApp API
+
+## Screenshots
+
+*(Ensure screenshots are uploaded to the `screenshots/` directory before committing)*
+
+1. **Dashboard Overview**: `screenshots/dashboard.png`
+2. **Users Page**: `screenshots/users.png`
+3. **Chat History**: `screenshots/chat_history.png`
+4. **AI Memory System**: `screenshots/ai_memory.png`
+5. **System Health**: `screenshots/system_health.png`
+
+## Installation
+
+### 1. Clone the repository
 ```bash
-# 1. Clone the repository
 git clone <your-repo-url>
 cd WPBot
+```
 
-# 2. Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
+### 2. Backend Setup
+```bash
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 3. Install dependencies
+# Install required Python packages
 pip install -r requirements.txt
 
-# 4. Setup environment variables
-cp .env.example .env
-# Edit .env with your API keys
-
-# 5. Run the server
+# Start the FastAPI server
 uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## API Endpoints
+### 3. Frontend Setup
+```bash
+cd frontend
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Health check — verify server is running |
-| GET | `/health` | Detailed health status |
-| GET | `/docs` | Interactive API documentation (Swagger) |
+# Install Node modules
+npm install
 
-## Project Structure
-
-```
-WPBot/
-├── src/
-│   ├── api/            # HTTP route handlers
-│   ├── services/       # Business logic (AI, messaging)
-│   ├── config/         # Environment & settings
-│   ├── models/         # Data schemas
-│   ├── utils/          # Shared helpers
-│   └── main.py         # App entry point
-├── requirements.txt
-├── .env.example
-└── README.md
+# Start the Vite development server
+npm run dev
 ```
 
-## Development Status
+## Environment Variables
 
-- [x] Phase 1: Foundation Setup
-- [ ] Phase 2: Twilio Webhook + Gemini Integration
-- [ ] Phase 3: Conversation Memory
-- [ ] Phase 4: Advanced Features
-- [ ] Phase 5: SaaS Scaling
+Copy the provided template and fill in your actual API keys.
 
-## License
+```bash
+cp .env.example .env
+```
+Ensure you provide `MONGODB_URL`, `GEMINI_API_KEY`, `TWILIO_ACCOUNT_SID`, and `TWILIO_AUTH_TOKEN`.
 
-MIT
+For the frontend, configure the base API URL in `frontend/.env`:
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+## Deployment
+
+This repository is optimized for modern PaaS platforms:
+
+* **Backend**: Configured for [Render](https://render.com) (see `render.yaml`).
+* **Frontend**: Configured for [Vercel](https://vercel.com) (see `frontend/vercel.json`).
+* **Database**: Configured for [MongoDB Atlas](https://mongodb.com).
+
+To deploy:
+1. Connect this GitHub repository to Render for the backend.
+2. Connect the `frontend/` directory to Vercel for the UI.
+3. Configure your Twilio WhatsApp Sandbox Webhook to point to `https://<YOUR-RENDER-URL>.onrender.com/api/webhook`.
+
+## Resume Highlights
+
+*Developed an AI-powered WhatsApp chatbot using FastAPI, Gemini AI, MongoDB Atlas, Twilio WhatsApp API, and React. Implemented persistent conversation memory, user profiling, admin analytics dashboard, and real-time chat monitoring using a scalable cloud-based architecture.*

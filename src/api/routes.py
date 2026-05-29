@@ -25,6 +25,8 @@ from fastapi import APIRouter, Form
 from src.config.settings import settings
 from src.services.gemini_service import gemini_service
 from src.services.twilio_service import twilio_service
+from src.services.memory_service import memory_service
+from src.services.profile_service import profile_service
 
 # ── Create Router ─────────────────────────────────────────────────
 router = APIRouter()
@@ -133,14 +135,43 @@ async def whatsapp_webhook(
     print(f"   Body: {Body}")
     print("═" * 60)
     
-    # ── Step 2: Generate AI response using Gemini ────────────────
+    # ── Step 2: Save incoming message & Retrieve history ─────────
+    # Save the user's message to MongoDB
+    await memory_service.save_message(
+        phone_number=From,
+        role="user",
+        content=Body
+    )
+    
+    # Retrieve the user profile and chat history
+    current_profile = await profile_service.get_profile(phone_number=From)
+    
+    chat_history = await memory_service.get_chat_history(
+        phone_number=From,
+        limit=10
+    )
+    
+    # Extract any new long-term facts from the message (updates profile in DB)
+    await profile_service.extract_memory_from_message(
+        message=Body, 
+        current_profile=current_profile
+    )
+    
+    # Format the updated profile to inject as context
+    profile_context = profile_service.format_profile_for_prompt(current_profile)
+    
+    # ── Step 3: Generate AI response using Gemini ────────────────
     # The gemini_service handles all AI logic: system prompt,
-    # API calls, and error fallback. The route stays thin.
-    ai_reply = await gemini_service.generate_response(user_message=Body)
+    # API calls, error fallback, and now contextual history + profile.
+    ai_reply = await gemini_service.generate_response(
+        user_message=Body,
+        chat_history=chat_history,
+        profile_context=profile_context
+    )
     
     print(f"💬 AI Reply: {ai_reply[:100]}{'...' if len(ai_reply) > 100 else ''}")
     
-    # ── Step 3: Send AI reply back via Twilio ────────────────────
+    # ── Step 4: Send AI reply back via Twilio & Save it ──────────
     reply_sent = False
     reply_sid = None
     error_detail = None
@@ -148,10 +179,18 @@ async def whatsapp_webhook(
     try:
         reply_result = twilio_service.send_message(
             to=From,       # Reply goes back to the sender
-            body=ai_reply, # AI-generated response (not static anymore!)
+            body=ai_reply, # AI-generated response
         )
         reply_sent = True
         reply_sid = reply_result["sid"]
+        
+        # Save the AI's response to MongoDB
+        await memory_service.save_message(
+            phone_number=From,
+            role="model",
+            content=ai_reply,
+            message_sid=reply_sid
+        )
     except Exception as e:
         # Log the error but DON'T crash — Twilio still needs HTTP 200
         error_detail = str(e)

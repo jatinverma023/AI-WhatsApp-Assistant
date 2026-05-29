@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-textPrimary font-sans antialiased selection:bg-white/20 selection:text-white;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface/40 backdrop-blur-xl border border-border shadow-glass rounded-2xl;
+  }
+  
+  .glass-card {
+    @apply bg-surface border border-border rounded-xl transition-all duration-300 hover:border-borderHover hover:bg-surfaceHover hover:shadow-glow;
+  }
+  
+  .input-field {
+    @apply bg-black border border-border rounded-lg px-4 py-2 text-textPrimary placeholder:text-textSecondary focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-surface border border-border text-textPrimary px-4 py-2 rounded-lg font-medium hover:bg-surfaceHover hover:border-borderHover transition-all duration-200 flex items-center justify-center gap-2;
+  }
+  
+  .badge {
+    @apply px-2 py-0.5 rounded-full text-xs font-medium border;
+  }
+}
+
+/* Custom Scrollbar for ultra-premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Subtle background gradient for Linear feel */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}

@@ -39,10 +39,15 @@ class Settings(BaseSettings):
     APP_NAME: str = "WhatsApp AI Bot"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
+    ENVIRONMENT: str = "development"
     
     # ── Server Configuration ──────────────────────────────────────
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    
+    # ── Database Configuration (Phase 4) ──────────────────────────
+    MONGODB_URL: str = "mongodb://localhost:27017"
+    DB_NAME: str = "whatsapp_ai_bot"
     
     # ── Twilio WhatsApp ───────────────────────────────────────────
     # Required — get from https://console.twilio.com
@@ -54,6 +59,14 @@ class Settings(BaseSettings):
     # ── Google Gemini AI ──────────────────────────────────────────
     # Required — get from https://aistudio.google.com/apikey
     GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-flash-lite-latest"
+    
+    # ── Admin Dashboard ───────────────────────────────────────────
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "admin123"
+    JWT_SECRET_KEY: str = "supersecretjwtkey_for_admin_dashboard"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRATION_MINUTES: int = 60 * 24 # 24 hours
     
     # ── Pydantic Settings Config ──────────────────────────────────
     # This tells Pydantic WHERE to find the .env file and how to read it

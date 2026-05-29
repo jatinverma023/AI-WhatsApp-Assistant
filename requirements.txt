@@ -20,6 +20,10 @@ uvicorn[standard]>=0.34.0,<0.35.0
 # Twilio sends webhooks as application/x-www-form-urlencoded — this parses them
 python-multipart>=0.0.20,<0.1.0
 
+# ── Database (Phase 4) ────────────────────────────────────────────
+# Motor: Official async MongoDB driver for Python
+motor>=3.6.0,<3.8.0
+
 # ── Configuration ─────────────────────────────────────────────────
 # python-dotenv: Loads .env files into environment variables
 python-dotenv>=1.1.0,<1.2.0
@@ -37,3 +41,6 @@ twilio>=9.6.0,<9.7.0
 # ── HTTP Client ───────────────────────────────────────────────────
 # httpx: Modern async HTTP client (used by SDKs and for testing)
 httpx>=0.28.0,<0.29.0
+
+# ── Auth ──────────────────────────────────────────────────────────
+PyJWT>=2.8.0,<3.0.0

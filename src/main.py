@@ -29,66 +29,78 @@ from src.config.settings import settings
 
 
 # ── Application Lifecycle ─────────────────────────────────────────
-# This runs code when the server starts up and shuts down.
-# Useful for: connecting to databases, initializing AI models, cleanup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Manages application startup and shutdown events.
+    """Manages application startup and shutdown events."""
+    from src.database.mongodb import connect_to_mongo, close_mongo_connection
     
-    Startup: Initialize resources (database connections, AI clients, etc.)
-    Shutdown: Clean up resources (close connections, flush logs, etc.)
-    """
-    # ── Startup ───────────────────────────────────────────────────
     print("=" * 60)
     print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
     print(f"📍 Server running at http://{settings.HOST}:{settings.PORT}")
-    print(f"📚 API Docs at http://{settings.HOST}:{settings.PORT}/docs")
-    print(f"🤖 Gemini AI: {'CONNECTED' if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != 'your-gemini-api-key-here' else 'NOT CONFIGURED'}")
-    print(f"🐛 Debug mode: {'ON' if settings.DEBUG else 'OFF'}")
+    print(f"🌍 Environment: {getattr(settings, 'ENVIRONMENT', 'development')}")
     print("=" * 60)
     
-    yield  # App runs here — this is where requests are handled
+    # Connect to MongoDB and create indexes
+    await connect_to_mongo()
     
-    # ── Shutdown ──────────────────────────────────────────────────
+    yield
+    
     print("\n🛑 Shutting down WhatsApp AI Bot...")
+    await close_mongo_connection()
     print("✅ Cleanup complete. Goodbye!")
-
 
 # ── Create FastAPI Application ────────────────────────────────────
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description=(
-        "An AI-powered WhatsApp chatbot using Google Gemini 2.5 Flash. "
-        "Receives messages via Twilio webhook, processes them with AI, "
-        "and sends intelligent replies back to WhatsApp."
-    ),
+    description="Production-ready AI WhatsApp Bot.",
     lifespan=lifespan,
-    # Customize the docs URLs
-    docs_url="/docs",       # Swagger UI
-    redoc_url="/redoc",     # ReDoc alternative docs
+    docs_url="/docs" if getattr(settings, 'ENVIRONMENT', 'development') != 'production' else None,
+    redoc_url="/redoc" if getattr(settings, 'ENVIRONMENT', 'development') != 'production' else None,
 )
-
 
 # ── CORS Middleware ───────────────────────────────────────────────
-# CORS controls which websites/apps can call our API.
-# For development, we allow all origins. In production, lock this down.
-#
-# WHY do we need CORS?
-# - Twilio's webhooks come from Twilio's servers (different origin)
-# - If we build a frontend dashboard later, it needs to call our API
-# - Without CORS, browsers block these cross-origin requests
+# In production, you would restrict allow_origins to your Vercel URL
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # Allow all origins (restrict in production)
+    allow_origins=["*"], # Update this to your frontend URL in production
     allow_credentials=True,
-    allow_methods=["*"],       # Allow all HTTP methods
-    allow_headers=["*"],       # Allow all headers
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    allow_headers=["*"],
 )
 
+# ── Global Exception Handling ─────────────────────────────────────
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Internal Server Error", "detail": "An unexpected error occurred. Please try again later."},
+    )
+
+# ── Health Check Endpoint ─────────────────────────────────────────
+@app.get("/health", tags=["Health"])
+async def health_check():
+    from src.database.mongodb import get_database
+    db = get_database()
+    
+    return {
+        "status": "healthy",
+        "mongodb": "connected" if db is not None else "disconnected",
+        "gemini": "connected" if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != "your-gemini-api-key-here" else "disconnected",
+        "twilio": "connected" if settings.TWILIO_ACCOUNT_SID else "disconnected",
+        "environment": getattr(settings, 'ENVIRONMENT', 'development')
+    }
 
 # ── Mount Routers ─────────────────────────────────────────────────
-# Include all route handlers. As the app grows, we add more routers:
-# e.g., app.include_router(webhook_router, prefix="/api/v1")
 app.include_router(router)
+
+from src.api.dashboard_routes import router as dashboard_router
+app.include_router(dashboard_router)
+
