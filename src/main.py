@@ -104,3 +104,6 @@ app.include_router(router)
 from src.api.dashboard_routes import router as dashboard_router
 app.include_router(dashboard_router)
 
+from src.api.web_chat_routes import router as web_chat_router
+app.include_router(web_chat_router)
+

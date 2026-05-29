@@ -13,6 +13,7 @@ import SystemStatus from './pages/SystemStatus';
 import Search from './pages/Search';
 import Memory from './pages/Memory';
 import Conversations from './pages/Conversations';
+import WebChat from './pages/WebChat';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -26,6 +27,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/chat" element={<WebChat />} />
         <Route path="/login" element={<Login />} />
         
         <Route
