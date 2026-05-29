@@ -1,8 +1,18 @@
+export function parseUTCDate(isoString) {
+  if (!isoString) return null;
+  let dateStr = isoString;
+  // If the string doesn't end with 'Z' and has no timezone offset, append 'Z' to force UTC parsing
+  if (!dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+    dateStr += 'Z';
+  }
+  return new Date(dateStr);
+}
+
 export function formatDate(isoString) {
   if (!isoString) return 'Never Active';
   try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return 'Never Active';
+    const date = parseUTCDate(isoString);
+    if (!date || isNaN(date.getTime())) return 'Never Active';
     
     return date.toLocaleString('en-GB', {
       day: '2-digit',
@@ -20,11 +30,15 @@ export function formatDate(isoString) {
 export function formatRelativeTime(isoString) {
   if (!isoString) return 'Never Active';
   try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return 'Never Active';
+    const date = parseUTCDate(isoString);
+    if (!date || isNaN(date.getTime())) return 'Never Active';
     
     const now = new Date();
     const diffMs = now - date;
+    
+    // Fallback if date is in the future due to slight clock sync issues
+    if (diffMs < 0) return 'Just now';
+    
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
