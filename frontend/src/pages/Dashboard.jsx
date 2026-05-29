@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import { Users, MessageSquare, Activity, Bot, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { formatRelativeTime } from '../utils/date';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -189,7 +190,7 @@ export default function Dashboard() {
                   <div className="flex justify-between items-baseline mb-1">
                     <span className="font-medium text-white text-sm truncate">{chat.phone_number}</span>
                     <span className="text-[10px] text-textSecondary whitespace-nowrap ml-2">
-                      {new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      {formatRelativeTime(chat.timestamp)}
                     </span>
                   </div>
                   <p className="text-xs text-textSecondary line-clamp-2 leading-relaxed">
@@ -199,9 +200,10 @@ export default function Dashboard() {
               </Link>
             ))}
             {recentChats.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-40 text-textSecondary">
-                <MessageSquare size={24} className="opacity-20 mb-2" />
-                <p className="text-sm">No recent conversations</p>
+              <div className="flex flex-col items-center justify-center h-40 text-textSecondary text-center px-4">
+                <Activity size={24} className="opacity-20 mb-2 text-white" />
+                <p className="text-sm font-medium text-white mb-0.5">No activity detected</p>
+                <p className="text-xs">There are no recent messages in the system.</p>
               </div>
             )}
           </div>

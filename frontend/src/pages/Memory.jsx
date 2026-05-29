@@ -1,30 +1,35 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { BrainCircuit, Clock, Tags } from 'lucide-react';
+import { BrainCircuit, Clock, Tags, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatRelativeTime } from '../utils/date';
 
 export default function Memory() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchMemories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/dashboard/users');
+      const usersWithMemory = response.data.filter(u => 
+        u.profession || u.coding_experience || 
+        (u.interests && u.interests.length > 0) || 
+        (u.goals && u.goals.length > 0) ||
+        (u.favorite_topics && u.favorite_topics.length > 0)
+      );
+      setUsers(usersWithMemory);
+    } catch (error) {
+      console.error("Failed to fetch memories:", error);
+      setError("Failed to load memory profiles. Backend may be unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMemories = async () => {
-      try {
-        const response = await api.get('/dashboard/users');
-        // Filter users who actually have some memory fields populated
-        const usersWithMemory = response.data.filter(u => 
-          u.profession || u.coding_experience || 
-          (u.interests && u.interests.length > 0) || 
-          (u.goals && u.goals.length > 0) ||
-          (u.favorite_topics && u.favorite_topics.length > 0)
-        );
-        setUsers(usersWithMemory);
-      } catch (error) {
-        console.error("Failed to fetch memories:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchMemories();
   }, []);
 
@@ -40,12 +45,24 @@ export default function Memory() {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 rounded-full border-2 border-border border-t-white animate-spin"></div>
+          <div className="relative">
+            <div className="w-8 h-8 rounded-full border-2 border-border border-t-white animate-spin"></div>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="glass-panel p-12 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center border border-danger/20 text-danger mb-4">
+            <AlertCircle size={32} />
+          </div>
+          <h3 className="text-xl font-medium text-white mb-2">{error}</h3>
+          <button onClick={fetchMemories} className="mt-4 px-6 py-2 bg-surface border border-border rounded-lg hover:bg-white/5 transition-colors">
+            Try Again
+          </button>
         </div>
       ) : users.length === 0 ? (
         <div className="glass-panel p-12 flex flex-col items-center justify-center text-center">
           <BrainCircuit size={48} className="text-textSecondary opacity-20 mb-4" />
-          <h3 className="text-xl font-medium text-white mb-2">No Semantic Memories Yet</h3>
+          <h3 className="text-xl font-medium text-white mb-2">No memory extracted yet</h3>
           <p className="text-textSecondary max-w-md">
             The AI engine automatically extracts facts, preferences, and goals as users interact with the bot. Keep chatting to generate memories.
           </p>
@@ -113,7 +130,7 @@ export default function Memory() {
 
               <div className="p-4 border-t border-border/50 bg-black/20 mt-auto flex items-center gap-2 text-xs text-textSecondary">
                 <Clock size={12} />
-                Last updated: {new Date(user.updated_at).toLocaleDateString()}
+                Last updated: {formatRelativeTime(user.updated_at)}
               </div>
             </motion.div>
           ))}

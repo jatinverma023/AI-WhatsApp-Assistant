@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { Search, User as UserIcon, Calendar, Clock, MessageSquare, ChevronRight, Filter, Download } from 'lucide-react';
+import { Search, User as UserIcon, Calendar, Clock, MessageSquare, ChevronRight, Filter, Download, BrainCircuit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { formatDate, formatRelativeTime } from '../utils/date';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -27,6 +28,19 @@ export default function Users() {
     user.phone_number.includes(search) || 
     (user.name && user.name.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const getMemoryStatus = (user) => {
+    let fields = 0;
+    if (user.profession) fields++;
+    if (user.coding_experience) fields++;
+    if (user.interests && user.interests.length > 0) fields++;
+    if (user.goals && user.goals.length > 0) fields++;
+    if (user.favorite_topics && user.favorite_topics.length > 0) fields++;
+
+    if (fields >= 3) return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' };
+    if (fields > 0) return { label: 'Partial', color: 'text-warning bg-warning/10 border-warning/20', dot: 'bg-warning' };
+    return { label: 'No Memory', color: 'text-danger bg-danger/10 border-danger/20', dot: 'bg-danger' };
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -81,7 +95,7 @@ export default function Users() {
               <thead>
                 <tr className="border-b border-border bg-surface/30">
                   <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">User</th>
-                  <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">Memory Status</th>
                   <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">First Seen</th>
                   <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">Last Active</th>
                   <th className="px-6 py-4 text-xs font-medium text-textSecondary uppercase tracking-wider">Interactions</th>
@@ -90,9 +104,9 @@ export default function Users() {
               </thead>
               <tbody className="divide-y divide-border/50">
                 {filteredUsers.map((user) => {
-                  const lastActiveDate = user.updated_at || user.created_at || new Date().toISOString();
-                  const isRecent = new Date().getTime() - new Date(lastActiveDate).getTime() < 24 * 60 * 60 * 1000;
+                  const lastActiveDate = user.last_interaction || user.updated_at || user.created_at;
                   const intCount = user.interaction_count || 0;
+                  const memStatus = getMemoryStatus(user);
                   
                   return (
                     <tr key={user._id} className="group hover:bg-white/[0.02] transition-colors cursor-pointer">
@@ -102,27 +116,27 @@ export default function Users() {
                             <UserIcon size={18} />
                           </div>
                           <div>
-                            <div className="font-medium text-white text-sm">{user.name || 'Anonymous User'}</div>
+                            <div className="font-medium text-white text-sm">{user.name || 'Unknown'}</div>
                             <div className="text-xs text-textSecondary mt-0.5">{user.phone_number}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider border ${isRecent ? 'bg-success/10 text-success border-success/20' : 'bg-surface text-textSecondary border-border'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${isRecent ? 'bg-success' : 'bg-textSecondary'}`}></span>
-                          {isRecent ? 'Active' : 'Inactive'}
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium tracking-wider border ${memStatus.color}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${memStatus.dot}`}></span>
+                          {memStatus.label}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-textSecondary">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="opacity-50" />
-                          {new Date(user.created_at || lastActiveDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {formatDate(user.created_at).split(',')[0]}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-textSecondary">
                         <div className="flex items-center gap-2">
                           <Clock size={14} className="opacity-50" />
-                          {new Date(lastActiveDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {formatRelativeTime(lastActiveDate)}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -146,8 +160,9 @@ export default function Users() {
                   <tr>
                     <td colSpan="6" className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center text-textSecondary">
-                        <Search size={32} className="opacity-20 mb-3" />
-                        <p className="text-sm">No users found matching "{search}"</p>
+                        <UserIcon size={32} className="opacity-20 mb-3" />
+                        <p className="text-sm font-medium text-white mb-1">No users found</p>
+                        <p className="text-xs">There are no users matching "{search}".</p>
                       </div>
                     </td>
                   </tr>

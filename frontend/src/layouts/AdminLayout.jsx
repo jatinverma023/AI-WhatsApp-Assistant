@@ -55,8 +55,8 @@ export default function AdminLayout() {
             </div>
             {!isCollapsed && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="overflow-hidden whitespace-nowrap">
-                <h1 className="font-semibold text-white tracking-tight">WPBot AI</h1>
-                <p className="text-[10px] text-textSecondary uppercase tracking-widest mt-0.5">Admin</p>
+                <h1 className="font-semibold text-white tracking-tight">WPBot AI Platform</h1>
+                <p className="text-[9px] text-textSecondary uppercase tracking-widest mt-0.5">AI-Powered Assistant</p>
               </motion.div>
             )}
           </div>
@@ -93,7 +93,7 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border flex flex-col gap-4">
           <div className={`flex items-center gap-3 p-2 rounded-lg ${!isCollapsed && 'hover:bg-white/5 transition-colors cursor-pointer'}`}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-accent to-purple-500 flex items-center justify-center text-white font-medium text-xs flex-shrink-0 shadow-glow-primary">
               AD
@@ -113,6 +113,13 @@ export default function AdminLayout() {
               </button>
             )}
           </div>
+          
+          {!isCollapsed && (
+             <div className="pt-2 text-[10px] text-textSecondary/50 text-center space-y-0.5">
+               <p>Version 1.0.0</p>
+               <p>Powered by Gemini + MongoDB</p>
+             </div>
+          )}
         </div>
       </motion.aside>
 
