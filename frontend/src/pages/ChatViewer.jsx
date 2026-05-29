@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { ArrowLeft, User, Bot, Clock, Search, Download, Copy, MessageSquare, Briefcase, Code, Languages, Target, Heart } from 'lucide-react';
+import { ArrowLeft, User, Bot, Clock, Search, Download, Copy, MessageSquare, Briefcase, Code, Languages, Target, Heart, AlertCircle, BrainCircuit } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { motion, AnimatePresence } from 'framer-motion';
